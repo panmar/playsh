@@ -72,7 +72,7 @@ class PlaySh:
         )
 
         glfw.set_framebuffer_size_callback(
-            self._window, lambda _, *args: self.on_framebuffer_size_change(*args)
+            self._window, lambda _, *args: self._on_framebuffer_size_change(*args)
         )
 
     def _update(self) -> None:
@@ -124,6 +124,6 @@ class PlaySh:
 
         glfw.terminate()
 
-    def on_framebuffer_size_change(self, width: int, height: int):
+    def _on_framebuffer_size_change(self, width: int, height: int):
         self._width = width
         self._height = height
