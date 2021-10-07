@@ -10,6 +10,8 @@ uniform float iTime;
 uniform vec4 iMouse;
 uniform sampler2D iChannel0;
 
+out vec4 fragColor;
+
 void main() {
     vec2 uv = (TEXCOORD - .5 * iResolution.xy) / iResolution.y;
     float a = atan(uv.y, uv.x) * texture(iChannel0, uv).r;
@@ -27,5 +29,5 @@ void main() {
         }
     }
 
-    gl_FragColor = min(0.9, 1.2 * exp(-pow(f, 0.45) * counter)) * (0.7 + 0.3 * cos(10. * r - 2. * iTime - vec4(.7, 1.4, 2.1, 0)));
+    fragColor = min(0.9, 1.2 * exp(-pow(f, 0.45) * counter)) * (0.7 + 0.3 * cos(10. * r - 2. * iTime - vec4(.7, 1.4, 2.1, 0)));
 }

@@ -1,6 +1,7 @@
 import time
 from dataclasses import dataclass
 from typing import Dict
+from sys import platform as _platform
 
 import glfw
 from glm import vec2, vec4
@@ -56,7 +57,11 @@ class PlaySh:
             raise GlfwInitError()
 
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
-        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 4)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 1)
+
+        if _platform == "darwin":
+            glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
+            glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
         self._window = glfw.create_window(
             self._width, self._height, "PlaySh", None, None
@@ -65,6 +70,9 @@ class PlaySh:
             glfw.terminate()
             raise GlfwCreateWindowError()
         glfw.make_context_current(self._window)
+
+        # NOTE(panmar): On retina monitors pixel size can be different then screen size
+        self._width, self._height = glfw.get_framebuffer_size(self._window)
 
         glfw.set_key_callback(
             self._window,
@@ -140,5 +148,4 @@ class PlaySh:
         glfw.terminate()
 
     def _on_framebuffer_size_change(self, width: int, height: int):
-        self._width = width
-        self._height = height
+        self._width, self._height = glfw.get_framebuffer_size(self._window)
