@@ -1,4 +1,4 @@
-from typing import Tuple
+from glm import vec2
 import glfw
 
 
@@ -12,7 +12,7 @@ class Input:
         self.mouse_keys = [glfw.RELEASE] * MOUSE_KEYS_COUNT
         self.prev_mouse_keys = self.mouse_keys.copy()
 
-        self.cursor_pos: Tuple[int, int] = (0, 0)
+        self.cursor_pos: vec2 = vec2(0.0)
 
     def update(self) -> None:
         self.prev_keys = self.keys.copy()
@@ -41,4 +41,4 @@ class Input:
         self.mouse_keys[key] = glfw.RELEASE if action == glfw.RELEASE else glfw.PRESS
 
     def on_cursor_pos_changed(self, x: int, y: int) -> None:
-        self.cursor_pos = (x, y)
+        self.cursor_pos = vec2(x, y)

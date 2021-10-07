@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass
-from typing import Dict, Final, List
+from typing import Any, Dict, Final, List
 from sys import platform as _platform
 
 import glfw
@@ -21,7 +21,6 @@ from playsh.timer import Timer
 @dataclass
 class System:
     input: Input
-    store: Store
     screen_renderer: ScreenRenderer
     timer: Timer
     frame_index: int = 0
@@ -38,8 +37,15 @@ class PlaySh:
         channel2: TextureDesc = None,
         channel3: TextureDesc = None,
     ) -> None:
-        self._width = width
-        self._height = height
+
+        self._system = Injector().get(System)
+        self._window = self._create_window(width, height, "PlaySh")
+        glfw.make_context_current(self._window)
+
+        self._setup_glfw_callbacks()
+
+        # NOTE(panmar): On retina monitors pixel size can be different then window size
+        self._width, self._height = glfw.get_framebuffer_size(self._window)
 
         try:
             with open(fragment_shader_path, "r") as file:
@@ -49,21 +55,14 @@ class PlaySh:
                 "Error reading file {} : {}".format(fragment_shader_path, repr(e))
             )
 
-        self._system = Injector().get(System)
-        self._startup()
+        self.channels = [
+            Texture(channel0) if channel0 else None,
+            Texture(channel1) if channel1 else None,
+            Texture(channel2) if channel2 else None,
+            Texture(channel3) if channel3 else None,
+        ]
 
-        MAX_CHANNELS: Final = 4
-        self.channels: List[Texture] = [None] * MAX_CHANNELS
-        if channel0:
-            self.channels[0] = Texture(channel0)
-        if channel1:
-            self.channels[1] = Texture(channel1)
-        if channel2:
-            self.channels[2] = Texture(channel2)
-        if channel3:
-            self.channels[3] = Texture(channel3)
-
-    def _startup(self) -> None:
+    def _create_window(self, width: int, height: int, title: str) -> Any:
         if not glfw.init():
             raise GlfwInitError()
 
@@ -74,17 +73,14 @@ class PlaySh:
             glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
             glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-        self._window = glfw.create_window(
-            self._width, self._height, "PlaySh", None, None
-        )
-        if not self._window:
+        window = glfw.create_window(width, height, title, None, None)
+        if not window:
             glfw.terminate()
             raise GlfwCreateWindowError()
-        glfw.make_context_current(self._window)
 
-        # NOTE(panmar): On retina monitors pixel size can be different then screen size
-        self._width, self._height = glfw.get_framebuffer_size(self._window)
+        return window
 
+    def _setup_glfw_callbacks(self):
         glfw.set_key_callback(
             self._window,
             lambda _, *args: self._system.input.on_key_changed(*args),
@@ -104,6 +100,10 @@ class PlaySh:
             self._window, lambda _, *args: self._on_framebuffer_size_change(*args)
         )
 
+    def _on_framebuffer_size_change(self, width: int, height: int):
+        # NOTE(panmar): On retina monitors pixel size can be different then screen size
+        self._width, self._height = glfw.get_framebuffer_size(self._window)
+
     def _update(self) -> None:
         self._system.timer.tick()
         self._system.frame_index = self._system.frame_index + 1
@@ -117,23 +117,30 @@ class PlaySh:
         params["iTime"] = self._system.timer.total_elapsed_seconds
         params["iTimeDelta"] = self._system.timer.elapsed_seconds
         params["iFrame"] = self._system.frame_index
-        mouse_param = vec4(0.0)
-        if self._system.input.is_mouse_key_down(glfw.MOUSE_BUTTON_LEFT):
-            mouse_param.x = self._system.input.cursor_pos[0]
-            mouse_param.y = self._system.input.cursor_pos[1]
-        if self._system.input.is_mouse_key_pressed(glfw.MOUSE_BUTTON_LEFT):
-            mouse_param.z = self._system.input.cursor_pos[0]
-            mouse_param.w = self._system.input.cursor_pos[1]
-        params["iMouse"] = mouse_param
+
+        input = self._system.input
+        params["iMouse"] = vec4(
+            input.cursor_pos.x
+            if input.is_mouse_key_down(glfw.MOUSE_BUTTON_LEFT)
+            else 0.0,
+            input.cursor_pos.y
+            if input.is_mouse_key_down(glfw.MOUSE_BUTTON_LEFT)
+            else 0.0,
+            input.cursor_pos.x
+            if input.is_mouse_key_pressed(glfw.MOUSE_BUTTON_LEFT)
+            else 0.0,
+            input.cursor_pos.y
+            if input.is_mouse_key_pressed(glfw.MOUSE_BUTTON_LEFT)
+            else 0.0,
+        )
 
         params["iChannelResolution"] = array(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0))
         for index, channel in enumerate(self.channels):
-            if not channel:
-                continue
-            params["iChannel{}".format(index)] = channel
-            params["iChannelResolution"][index] = vec3(
-                channel.width, channel.height, 0.0
-            )
+            if channel:
+                params["iChannel{}".format(index)] = channel
+                params["iChannelResolution"][index] = vec3(
+                    channel.width, channel.height, 0.0
+                )
 
         return params
 
@@ -151,17 +158,14 @@ class PlaySh:
             self._update()
             self._render()
 
-            def sleep_until_framerate(frame_rate: int):
+            def sleep_until_end_of_frame(frame_rate: int):
                 frame_time = 1.0 / frame_rate
                 sleep_time = self._system.timer.seconds_since_tick() - frame_time
                 if sleep_time > 0.0:
                     time.sleep(sleep_time)
 
-            sleep_until_framerate(frame_rate=30)
+            sleep_until_end_of_frame(frame_rate=30)
             glfw.swap_buffers(self._window)
             glfw.poll_events()
 
         glfw.terminate()
-
-    def _on_framebuffer_size_change(self, width: int, height: int):
-        self._width, self._height = glfw.get_framebuffer_size(self._window)
