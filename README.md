@@ -10,6 +10,9 @@ A GLSL fragment shader playground, inspired by [Shadertoy](https://www.shadertoy
 * uniform int __iFrame__
 * uniform vec4 __iMouse__
 * uniform Texture2D __iChannel0__
+* uniform Texture2D __iChannel1__
+* uniform Texture2D __iChannel2__
+* uniform Texture2D __iChannel3__
 * uniform vec3 __iChannelResolution__[4]
 
 ## Dependencies
