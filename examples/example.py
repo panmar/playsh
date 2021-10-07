@@ -1,5 +1,4 @@
-from playsh.graphics.texture import Filter, TextureDesc, Wrap
-from playsh import PlaySh
+from playsh import PlaySh, TextureDesc, Filter, Wrap
 
 
 def main() -> None:
