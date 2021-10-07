@@ -1,14 +1,14 @@
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Final, List
 from sys import platform as _platform
+from typing import Any, Dict
 
 import glfw
-from glm import vec2, vec3, vec4, array
+from glm import array, vec3, vec4
 from injector import Injector, inject
 from OpenGL import GL as gl
 
-from playsh.error import FragmentShaderIOError, GlfwCreateWindowError, GlfwInitError
+from playsh.error import GlfwCreateWindowError, GlfwInitError
 from playsh.graphics.renderer import ScreenRenderer
 from playsh.graphics.shader import Shader
 from playsh.graphics.texture import Texture, TextureDesc
@@ -47,13 +47,7 @@ class PlaySh:
         # NOTE(panmar): On retina monitors pixel size can be different then window size
         self._width, self._height = glfw.get_framebuffer_size(self._window)
 
-        try:
-            with open(fragment_shader_path, "r") as file:
-                self._fragment_shader_text = file.read()
-        except IOError as e:
-            raise FragmentShaderIOError(
-                "Error reading file {} : {}".format(fragment_shader_path, repr(e))
-            )
+        self._fragment_shader_path = fragment_shader_path
 
         self.channels = [
             Texture(channel0) if channel0 else None,
@@ -150,7 +144,7 @@ class PlaySh:
         gl.glViewport(0, 0, self._width, self._height)
 
         self._system.screen_renderer.render(
-            self._fragment_shader_text, self._collect_builtin_params()
+            self._fragment_shader_path, self._collect_builtin_params()
         )
 
     def run(self) -> None:

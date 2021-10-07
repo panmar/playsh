@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from dataclasses import dataclass
 from functools import cache
 from typing import Dict, Final, Generator, Tuple, Union
 
@@ -8,7 +7,11 @@ import numpy
 from glm import vec2, vec3
 from injector import inject
 from OpenGL import GL as gl
-from playsh.error import GeometryInvalidPositions, ShaderAttributeNotFound
+from playsh.error import (
+    FragmentShaderIOError,
+    GeometryInvalidPositions,
+    ShaderAttributeNotFound,
+)
 from playsh.graphics.geometry import Geometry, ScreenQuad
 from playsh.graphics.shader import Attribute as ShaderAttribute
 from playsh.graphics.shader import Shader
@@ -122,9 +125,20 @@ class ScreenRenderer:
         """
 
     def render(
-        self, fragment_shader_text: str, params: Dict[str, Shader.ParamType]
+        self, fragment_shader_path: str, params: Dict[str, Shader.ParamType]
     ) -> None:
-        shader = Shader.from_text(self._vertex_shader_text, fragment_shader_text)
+        shader = self._get_or_create_shader(fragment_shader_path)
         for name, param in params.items():
             shader.try_param(name, param)
         self.geometry_renderer.render(ScreenQuad(), shader)
+
+    @cache
+    def _get_or_create_shader(self, fragment_shader_path: str) -> Shader:
+        try:
+            with open(fragment_shader_path, "r") as file:
+                fragment_shader_text = file.read()
+                return Shader.from_text(self._vertex_shader_text, fragment_shader_text)
+        except IOError as e:
+            raise FragmentShaderIOError(
+                "Error reading file {} : {}".format(fragment_shader_path, repr(e))
+            )
