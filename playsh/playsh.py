@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Final, List
 from sys import platform as _platform
 
 import glfw
@@ -33,7 +33,10 @@ class PlaySh:
         width: int,
         height: int,
         fragment_shader_path: str,
-        texture: TextureDesc = None,
+        channel0: TextureDesc = None,
+        channel1: TextureDesc = None,
+        channel2: TextureDesc = None,
+        channel3: TextureDesc = None,
     ) -> None:
         self._width = width
         self._height = height
@@ -49,8 +52,16 @@ class PlaySh:
         self._system = Injector().get(System)
         self._startup()
 
-        if texture:
-            self.texture = Texture(texture)
+        MAX_CHANNELS: Final = 4
+        self.channels: List[Texture] = [None] * MAX_CHANNELS
+        if channel0:
+            self.channels[0] = Texture(channel0)
+        if channel1:
+            self.channels[1] = Texture(channel1)
+        if channel2:
+            self.channels[2] = Texture(channel2)
+        if channel3:
+            self.channels[3] = Texture(channel3)
 
     def _startup(self) -> None:
         if not glfw.init():
@@ -115,9 +126,13 @@ class PlaySh:
             mouse_param.w = self._system.input.cursor_pos[1]
         params["iMouse"] = mouse_param
 
-        if self.texture:
-            params["iChannel0"] = self.texture
-            params["iChannel0Resolution"] = vec2(self.texture.width, self.texture.height)
+        for index, channel in enumerate(self.channels):
+            if not channel:
+                continue
+            params["iChannel{}".format(index)] = channel
+            params["iChannel{}Resolution".format(index)] = vec2(
+                channel.width, channel.height
+            )
 
         return params
 

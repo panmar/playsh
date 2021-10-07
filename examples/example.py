@@ -6,8 +6,11 @@ def main() -> None:
         width=1920,
         height=1200,
         fragment_shader_path="examples/example.fs",
-        texture=TextureDesc(
+        channel0=TextureDesc(
             path="examples/noise.png", filter=Filter.LINEAR, wrap=Wrap.REPEAT
+        ),
+        channel1=TextureDesc(
+            path="examples/noise2.jpg", filter=Filter.LINEAR, wrap=Wrap.REPEAT
         ),
     )
     app.run()

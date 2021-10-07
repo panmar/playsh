@@ -9,12 +9,14 @@ uniform vec2 iResolution;
 uniform float iTime;
 uniform vec4 iMouse;
 uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
 
 out vec4 fragColor;
 
 void main() {
     vec2 uv = (TEXCOORD - .5 * iResolution.xy) / iResolution.y;
-    float a = atan(uv.y, uv.x) * texture(iChannel0, uv).r;
+    float factor = mix(texture(iChannel0, uv).r, texture(iChannel1, uv).r, abs(sin(iTime)));
+    float a = atan(uv.y, uv.x) * factor;
     float r = (0.5 + (iMouse.x / iResolution.x)) * length(uv);
     float counter = 100.;
     a = 4. * a + 20. * r + 50. * cos(r) * cos(.1 * iTime) + abs(a * r);
