@@ -14,6 +14,7 @@ from playsh.error import (
     ShaderLinkageError,
     ShaderUniformNotFound,
 )
+from playsh.graphics.texture import Texture
 
 
 class Attribute(Enum):
@@ -25,6 +26,7 @@ class Attribute(Enum):
 class Shader:
     def __init__(self, program: int = 0):
         self.program = program
+        self.current_sampler_slot: int = 0
 
     @staticmethod
     def from_file(vs_path: Path, fs_path: Path) -> "Shader":
@@ -80,7 +82,7 @@ class Shader:
 
         return location
 
-    ParamType = Union[int, float, vec2, vec3, vec4, mat4]
+    ParamType = Union[int, float, vec2, vec3, vec4, mat4, Texture]
 
     def param(self, name: str, value: ParamType) -> "Shader":
         location = gl.glGetUniformLocation(self.program, name)
@@ -99,6 +101,10 @@ class Shader:
             gl.glUniform4f(location, *value)
         elif isinstance(value, mat4):
             gl.glUniformMatrix4fv(location, 1, True, glm.value_ptr(value))
+        elif isinstance(value, Texture):
+            value.bind()
+            self.param(name, self.current_sampler_slot)
+            self.current_sampler_slot = self.current_sampler_slot + 1
         else:
             raise ShaderInvalidParamType(
                 "Parameter {} is unsupported".format(type(value))
@@ -116,6 +122,7 @@ class Shader:
         if not self.program:
             raise ShaderInvalidProgram()
         gl.glUseProgram(self.program)
+        self.current_sampler_slot = 0
         return self
 
     def unbind(self) -> "Shader":

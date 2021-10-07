@@ -1,18 +1,19 @@
+import time
 from dataclasses import dataclass
-import glfw
-from typing import Callable, Dict
-from injector import Injector, inject
+from typing import Dict
 
-from playsh.error import FragmentShaderIOError, GlfwInitError, GlfwCreateWindowError
-from playsh.graphics.geometry import ScreenQuad
-from playsh.graphics.shader import Shader
+import glfw
+from glm import vec2, vec4
+from injector import Injector, inject
+from OpenGL import GL as gl
+
+from playsh.error import FragmentShaderIOError, GlfwCreateWindowError, GlfwInitError
 from playsh.graphics.renderer import ScreenRenderer
+from playsh.graphics.shader import Shader
+from playsh.graphics.texture import Texture, TextureDesc
 from playsh.input import Input
 from playsh.store import Store
-from OpenGL import GL as gl
-from glm import vec2, vec3, vec4
 from playsh.timer import Timer
-import time
 
 
 @inject
@@ -26,7 +27,13 @@ class System:
 
 
 class PlaySh:
-    def __init__(self, width: int, height: int, fragment_shader_path: str) -> None:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        fragment_shader_path: str,
+        texture: TextureDesc = None,
+    ) -> None:
         self._width = width
         self._height = height
 
@@ -40,6 +47,9 @@ class PlaySh:
 
         self._system = Injector().get(System)
         self._startup()
+
+        if texture:
+            self.texture = Texture(texture)
 
     def _startup(self) -> None:
         if not glfw.init():
@@ -96,6 +106,11 @@ class PlaySh:
             mouse_param.z = self._system.input.cursor_pos[0]
             mouse_param.w = self._system.input.cursor_pos[1]
         params["iMouse"] = mouse_param
+
+        if self.texture:
+            params["iChannel0"] = self.texture
+            params["iChannel0Resolution"] = vec2(self.texture.width, self.texture.height)
+
         return params
 
     def _render(self) -> None:
