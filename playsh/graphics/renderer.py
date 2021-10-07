@@ -108,11 +108,11 @@ class ScreenRenderer:
 
         out vec2 TEXCOORD;
         
-        uniform vec2 iResolution;
+        uniform vec3 iResolution;
 
         void main() {
             gl_Position = vec4(IN_POSITION, 1.0);
-            TEXCOORD = iResolution * IN_TEXCOORD;
+            TEXCOORD = iResolution.xy * IN_TEXCOORD;
         }
         """
 

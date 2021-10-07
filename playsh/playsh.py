@@ -4,7 +4,7 @@ from typing import Dict, Final, List
 from sys import platform as _platform
 
 import glfw
-from glm import vec2, vec4
+from glm import vec2, vec3, vec4, array
 from injector import Injector, inject
 from OpenGL import GL as gl
 
@@ -113,7 +113,7 @@ class PlaySh:
 
     def _collect_builtin_params(self) -> Dict[str, Shader.ParamType]:
         params: Dict[str, Shader.ParamType] = dict()
-        params["iResolution"] = vec2(self._width, self._height)
+        params["iResolution"] = vec3(self._width, self._height, 0.0)
         params["iTime"] = self._system.timer.total_elapsed_seconds
         params["iTimeDelta"] = self._system.timer.elapsed_seconds
         params["iFrame"] = self._system.frame_index
@@ -126,12 +126,13 @@ class PlaySh:
             mouse_param.w = self._system.input.cursor_pos[1]
         params["iMouse"] = mouse_param
 
+        params["iChannelResolution"] = array(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0))
         for index, channel in enumerate(self.channels):
             if not channel:
                 continue
             params["iChannel{}".format(index)] = channel
-            params["iChannel{}Resolution".format(index)] = vec2(
-                channel.width, channel.height
+            params["iChannelResolution"][index] = vec3(
+                channel.width, channel.height, 0.0
             )
 
         return params

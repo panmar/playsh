@@ -4,12 +4,13 @@ from pathlib import Path
 from typing import Union
 
 import glm
-from glm import mat4, vec2, vec3, vec4
+from glm import mat4, vec2, vec3, vec4, array
 from OpenGL import GL as gl
 from playsh.error import (
     ShaderAttributeNotFound,
     ShaderCompilationError,
     ShaderInvalidParamType,
+    ShaderInvalidParamValue,
     ShaderInvalidProgram,
     ShaderLinkageError,
     ShaderUniformNotFound,
@@ -82,7 +83,7 @@ class Shader:
 
         return location
 
-    ParamType = Union[int, float, vec2, vec3, vec4, mat4, Texture]
+    ParamType = Union[int, float, vec2, vec3, vec4, mat4, array, Texture]
 
     def param(self, name: str, value: ParamType) -> "Shader":
         location = gl.glGetUniformLocation(self.program, name)
@@ -101,6 +102,21 @@ class Shader:
             gl.glUniform4f(location, *value)
         elif isinstance(value, mat4):
             gl.glUniformMatrix4fv(location, 1, True, glm.value_ptr(value))
+        elif isinstance(value, array):
+            if len(value) == 0:
+                raise ShaderInvalidParamValue("Shader array parameter is empty")
+            # NOTE(panmar): We assume that array stores the same types
+            array_type = type(value[0])
+            if array_type == glm.vec2:
+                gl.glUniform2fv(location, len(value), value.ptr)
+            elif array_type == glm.vec3:
+                gl.glUniform3fv(location, len(value), value.ptr)
+            elif array_type == glm.vec4:
+                gl.glUniform4fv(location, len(value), value.ptr)
+            else:
+                raise ShaderInvalidParamType(
+                    "Parameter array[{}] is unsupported".format(array_type)
+                )
         elif isinstance(value, Texture):
             value.bind()
             self.param(name, self.current_sampler_slot)

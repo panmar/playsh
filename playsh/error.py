@@ -42,5 +42,9 @@ class ShaderInvalidParamType(PlayShError):
     pass
 
 
+class ShaderInvalidParamValue(PlayShError):
+    pass
+
+
 class GeometryInvalidPositions(PlayShError):
     pass
