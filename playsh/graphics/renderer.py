@@ -8,7 +8,7 @@ import numpy
 from glm import vec2, vec3
 from injector import inject
 from OpenGL import GL as gl
-from playsh.error import GeometryInvalidPositions
+from playsh.error import GeometryInvalidPositions, ShaderAttributeNotFound
 from playsh.graphics.geometry import Geometry, ScreenQuad
 from playsh.graphics.shader import Attribute as ShaderAttribute
 from playsh.graphics.shader import Shader
@@ -28,6 +28,12 @@ class GpuBuffer:
         ) -> None:
             if not geometry_attribute:
                 return
+
+            try:
+                attrib_location = shader.attribute_location(attribute)
+            except ShaderAttributeNotFound:
+                return
+
             geometry_attribute_flat = [
                 item for vertex in geometry_attribute for item in vertex
             ]
@@ -38,7 +44,6 @@ class GpuBuffer:
                 gl.GL_ARRAY_BUFFER, len(vertices) * 4, vertices, gl.GL_STATIC_DRAW
             )
 
-            attrib_location = shader.attribute_location(attribute)
             gl.glEnableVertexAttribArray(attrib_location)
             vertex_bytesize = glm.sizeof(geometry_attribute[0])
             vertex_component = gl.GL_FLOAT
