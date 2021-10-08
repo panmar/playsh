@@ -128,13 +128,13 @@ class PlaySh:
             else 0.0,
         )
 
-        params["iChannelResolution"] = array(vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0))
         for index, channel in enumerate(self.channels):
             if channel:
                 params["iChannel{}".format(index)] = channel
-                params["iChannelResolution"][index] = vec3(
-                    channel.width, channel.height, 0.0
-                )
+
+        params["iChannelResolution"] = [
+            vec3(ch.width, ch.height, 0.0) if ch else vec3(0.0) for ch in self.channels
+        ]
 
         return params
 
