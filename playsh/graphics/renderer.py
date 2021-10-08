@@ -27,7 +27,7 @@ class GpuBuffer:
         gl.glBindVertexArray(self.vao)
 
         def try_create_buffer_slot(
-            geometry_attribute: Union[tuple[vec2], tuple[vec3]],
+            geometry_attribute: Union[tuple[vec2], tuple[vec3], None],
             attribute: ShaderAttribute,
         ) -> None:
             if not geometry_attribute:
