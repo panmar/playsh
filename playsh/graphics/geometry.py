@@ -2,7 +2,7 @@ from enum import Enum
 from OpenGL import GL as gl
 from dataclasses import dataclass
 from glm import vec3, vec2
-from typing import List, Tuple, Optional
+from typing import Optional
 
 
 class Topology(Enum):
@@ -13,10 +13,10 @@ class Topology(Enum):
 @dataclass(eq=True, frozen=True)
 class Geometry:
     topology: Topology
-    positions: Tuple[vec3]
-    normals: Optional[Tuple[vec3]] = None
-    texcoords: Optional[Tuple[vec2]] = None
-    indices: Optional[Tuple[int]] = None
+    positions: tuple[vec3]
+    normals: Optional[tuple[vec3]] = None
+    texcoords: Optional[tuple[vec2]] = None
+    indices: Optional[tuple[int]] = None
 
 
 class ScreenQuad(Geometry):

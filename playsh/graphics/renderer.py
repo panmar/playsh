@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from functools import cache
-from typing import Dict, Final, Generator, Tuple, Union
+from typing import Final, Union
+from collections.abc import Generator
 
 import glm
 import numpy
@@ -26,7 +27,7 @@ class GpuBuffer:
         gl.glBindVertexArray(self.vao)
 
         def try_create_buffer_slot(
-            geometry_attribute: Union[Tuple[vec2], Tuple[vec3]],
+            geometry_attribute: Union[tuple[vec2], tuple[vec3]],
             attribute: ShaderAttribute,
         ) -> None:
             if not geometry_attribute:
@@ -125,7 +126,7 @@ class ScreenRenderer:
         """
 
     def render(
-        self, fragment_shader_path: str, params: Dict[str, Shader.ParamType]
+        self, fragment_shader_path: str, params: dict[str, Shader.ParamType]
     ) -> None:
         shader = self._get_or_create_shader(fragment_shader_path)
         for name, param in params.items():

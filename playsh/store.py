@@ -1,10 +1,10 @@
-from typing import Dict, Union
+from typing import Union
 
 
 class Store:
     def __init__(self) -> None:
         ItemType = Union[float, int]
-        self._storage: Dict[str, ItemType] = dict()
+        self._storage: dict[str, ItemType] = dict()
 
     def __getitem__(self, key: str):
         if type(key) is not str:

@@ -1,7 +1,7 @@
 import time
 from dataclasses import dataclass
 from sys import platform as _platform
-from typing import Any, Dict
+from typing import Any
 
 import glfw
 from glm import array, vec3, vec4
@@ -105,8 +105,8 @@ class PlaySh:
         if self._system.input.is_key_pressed(glfw.KEY_ESCAPE):
             glfw.set_window_should_close(self._window, True)
 
-    def _collect_builtin_params(self) -> Dict[str, Shader.ParamType]:
-        params: Dict[str, Shader.ParamType] = dict()
+    def _collect_builtin_params(self) -> dict[str, Shader.ParamType]:
+        params: dict[str, Shader.ParamType] = dict()
         params["iResolution"] = vec3(self._width, self._height, 0.0)
         params["iTime"] = self._system.timer.total_elapsed_seconds
         params["iTimeDelta"] = self._system.timer.elapsed_seconds
