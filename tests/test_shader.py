@@ -3,6 +3,7 @@ import glfw
 
 from playsh.error import GlfwInitError, GlfwCreateWindowError, ShaderUniformNotFound
 from playsh.graphics.shader import Shader
+from sys import platform as _platform
 
 
 class ShaderTest(unittest.TestCase):
@@ -15,6 +16,13 @@ class ShaderTest(unittest.TestCase):
 
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 4)
+
+        if _platform == "darwin":
+            glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+            glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+            glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
+            glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+
         glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
         window = glfw.create_window(640, 480, "ShaderTest", None, None)
 
@@ -38,8 +46,9 @@ class ShaderTest(unittest.TestCase):
 
         self.fs_text = """
         #version 330
+        out vec4 fragColor;
         void main() {
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            fragColor = vec4(1.0, 0.0, 0.0, 1.0);
         }
         """
 

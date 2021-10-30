@@ -64,6 +64,8 @@ class PlaySh:
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 1)
 
         if _platform == "darwin":
+            # glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+            # glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
             glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
             glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 

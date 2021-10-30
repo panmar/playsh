@@ -133,3 +133,6 @@ dmypy.json
 
 # Venv
 .ve/
+
+# MacOS temp files
+.DS_Store
