@@ -1,7 +1,9 @@
 import setuptools
 
 with open("README.md", "r") as fh:
-    long_description = fh.read()
+    description_lines = fh.readlines()
+    description_lines = [line for line in description_lines if not "<img src=" in line]
+    long_description = "\n".join(description_lines)
 
 setuptools.setup(
     name="playsh",
