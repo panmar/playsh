@@ -3,6 +3,11 @@ A GLSL fragment shader playground, inspired by [Shadertoy](https://www.shadertoy
 
 <p align="center"><img src="examples/example.jpg" alt="example" width="600"/></p>
 
+## Installatin
+```
+pip install playsh
+```
+
 ## Builtin shader uniforms
 * uniform vec3 __iResolution__
 * uniform float __iTime__
